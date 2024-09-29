@@ -1,0 +1,24 @@
+.is-invalid::placeholder {
+    color: #dc3545 !important;
+  }
+  
+  input.form-control.is-invalid::placeholder {
+    color: #dc3545; /* Warna merah untuk placeholder */
+  }
+  
+  /* Kompatibilitas dengan browser lain */
+  input.form-control.is-invalid::-webkit-input-placeholder {
+    color: #dc3545;
+  }
+  
+  input.form-control.is-invalid:-ms-input-placeholder {
+    color: #dc3545;
+  }
+  
+  input.form-control.is-invalid::-ms-input-placeholder {
+    color: #dc3545;
+  }
+
+  .text-justify {
+    text-align: justify;
+}
