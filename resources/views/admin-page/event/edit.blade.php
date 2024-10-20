@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>PBKK APPS</title>
+    <title>Edit Event - Eventorize</title>
     @include('template.head')
 </head>
 
@@ -24,41 +24,60 @@
                 <!-- Header -->
                 @include('template.header')
                 <!-- Header -->
-                <div class="container-fluid" >
+                <div class="container-fluid">
                     <h1 class="h3 mb-2 font-weight-bold text-gray-800 mr-2" style="line-height: 1.2;">Edit Event</h1>
                 </div>
 
                 <!-- Begin Page Content -->
-                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <div class="d-sm-flex mb-4">
+                    <div class="card-body col-md-4">
+                        <label class="font-weight-bold text-gray-800 mr-2" for="name">Event Image</label>
+                        <img src="{{ asset('storage/img/'.$event->image) }}" alt="{{ $event->image }}" class="card-img" style="max-width: 100%; height: auto;">
+                    </div>
                     <div class="card-body">
-                        <form action="{{ route('crud-event.update', $event->event_id) }}" method="POST" enctype="multipart/form-data">
+                        <!-- Form untuk mengedit event -->
+                        <form action="{{ route('crud-event.update', $event->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            @method('PUT') <!-- Menandakan bahwa ini adalah request untuk update -->
+                            @method('PUT') <!-- Metode PUT untuk update -->
 
+                            <!-- Event Name -->
                             <div class="form-group">
-                                <label class="font-weight-bold text-gray-800 mr-2" for="event_name">Event Name</label>
-                                <input type="text" class="form-control @error('event_name') is-invalid @enderror" id="event_name"
-                                    name="event_name" value="{{ old('event_name', $event->event_name) }}" required>
-                                @error('event_name')
+                                <label class="font-weight-bold text-gray-800 mr-2" for="name">Event Name</label>
+                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
+                                    name="name" value="{{ old('name', $event->name) }}" required>
+                                @error('name')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
                             </div>
 
+                            <!-- Organizer dan Category -->
                             <div class="row">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label class="font-weight-bold text-gray-800 mr-2" for="organizer">Organizer</label>
-                                        <input type="text" class="form-control @error('category') is-invalid @enderror" id="organizer"
-                                            name="organizer" value="{{ old('organizer', $event->organizer) }}" required>
-                                        @error('organizer')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
+                                @if(auth()->user()->role == 'organizer')
+                                    <!-- Field Organizer (hanya bisa diisi dengan ID organizer yang sedang login) -->
+                                    <input type="hidden" name="organizer_u_id" value="{{ auth()->user()->id }}">
+                                @else
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold text-gray-800 mr-2" for="organizer_u_id">Organizer</label>
+                                            <select class="form-control @error('organizer_u_id') is-invalid @enderror" id="organizer_u_id" name="organizer_u_id" required>
+                                                <option value="">Select Organizer</option>
+                                                @foreach ($organizers as $organizer)
+                                                    <option value="{{ $organizer->id }}" {{ old('organizer_u_id', $event->organizer_u_id) == $organizer->id ? 'selected' : '' }}>
+                                                        {{ $organizer->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('organizer_u_id')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
                                     </div>
-                                </div>
+                                @endif 
+                            
                                 <div class="col">
                                     <div class="form-group">
                                         <label class="font-weight-bold text-gray-800 mr-2" for="category">Category</label>
@@ -71,6 +90,10 @@
                                         @enderror
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Location, Status, Fee -->
+                            <div class="row">
                                 <div class="col">
                                     <div class="form-group">
                                         <label class="font-weight-bold text-gray-800 mr-2" for="location">Location</label>
@@ -83,14 +106,27 @@
                                         @enderror
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="font-weight-bold text-gray-800 mr-2" for="status">Status</label>
+                                        <select class="form-control @error('status') is-invalid @enderror" id="status" name="status" required>
+                                            <option value="1" {{ old('status', $event->status) == 1 ? 'selected' : '' }}>Available</option>
+                                            <option value="0" {{ old('status', $event->status) == 0 ? 'selected' : '' }}>Sold Out</option>
+                                        </select>
+                                        @error('status')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 <div class="col">
                                     <div class="form-group">
                                         <label class="font-weight-bold text-gray-800 mr-2" for="fee">Fee</label>
-                                        <input type="number" class="form-control @error('fee') is-invalid @enderror" id="fee" name="fee"
-                                            value="{{ old('fee', $event->fee) }}">
+                                        <input type="number" class="form-control @error('fee') is-invalid @enderror" id="fee"
+                                            name="fee" value="{{ old('fee', $event->fee) }}">
                                         @error('fee')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -98,6 +134,10 @@
                                         @enderror
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Start Date, End Date, Start Time, End Time -->
+                            <div class="row">
                                 <div class="col">
                                     <div class="form-group">
                                         <label class="font-weight-bold text-gray-800 mr-2" for="start_date">Start Date</label>
@@ -110,6 +150,7 @@
                                         @enderror
                                     </div>
                                 </div>
+
                                 <div class="col">
                                     <div class="form-group">
                                         <label class="font-weight-bold text-gray-800 mr-2" for="end_date">End Date</label>
@@ -122,6 +163,7 @@
                                         @enderror
                                     </div>
                                 </div>
+
                                 <div class="col">
                                     <div class="form-group">
                                         <label class="font-weight-bold text-gray-800 mr-2" for="start_time">Start Time</label>
@@ -134,6 +176,7 @@
                                         @enderror
                                     </div>
                                 </div>
+
                                 <div class="col">
                                     <div class="form-group">
                                         <label class="font-weight-bold text-gray-800 mr-2" for="end_time">End Time</label>
@@ -148,6 +191,7 @@
                                 </div>
                             </div>
 
+                            <!-- Description -->
                             <div class="form-group">
                                 <label class="font-weight-bold text-gray-800 mr-2" for="description">Description</label>
                                 <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4">{{ old('description', $event->description) }}</textarea>
@@ -158,14 +202,10 @@
                                 @enderror
                             </div>
 
+                            <!-- Upload Image -->
                             <div class="form-group">
-                                <label class="font-weight-bold text-gray-800 mr-2" for="image">Upload Image</label>
+                                <label class="font-weight-bold text-gray-800 mr-2" for="image">Upload New Image</label>
                                 <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image">
-                                @if ($event->image)
-                                    <div class="mt-2">
-                                        <img src="{{ asset('storage/img/' . $event->image) }}" alt="{{ $event->image }}" style="max-width: 200px;">
-                                    </div>
-                                @endif
                                 @error('image')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -173,17 +213,11 @@
                                 @enderror
                             </div>
 
-                            <form action="{{ route('crud-event.update', $event->event_id) }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                @method('PUT') <!-- Menandakan bahwa ini adalah request untuk update -->
-                                <!-- Other form fields -->
-
-                                <!-- Menggunakan Flexbox untuk menata tombol -->
-                                <div class="d-flex justify-content-between">
-                                    <a href="{{ route('crud-event.show', $event->event_id) }}" class="btn btn-primary">Back</a>
-                                    <button type="submit" class="btn btn-success">Update Event</button>
-                                </div>
-                            </form>
+                            <!-- Submit and Back Buttons -->
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ route('crud-event.show', $event->id) }}" class="btn btn-secondary">Back</a>
+                                <button type="submit" class="btn btn-primary">Update Event</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -204,6 +238,7 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
+
     <!-- Bootstrap core JavaScript-->
     <script src="{{asset('template/vendor/jquery/jquery.min.js')}}"></script>
     <script src="{{asset('template/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>

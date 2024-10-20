@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>PBKK APPS</title>
+    <title>Event Details - Eventorize</title>
     @include('template.head')
 </head>
 
@@ -29,7 +29,7 @@
                 </div>
 
                 <!-- Begin Page Content -->
-                <div class="container mr-3">
+                <div class="container-fluid">
                     <div class="card mb-4">
                         <div class="row no-gutters">
                             <!-- Gambar Event di Sebelah Kiri -->
@@ -40,11 +40,11 @@
                             <!-- Detail Event di Sebelah Kanan -->
                             <div class="col-md-8">
                                 <div class="card-body">
-                                    <h5 class="card-title text-gray-900 font-weight-bold">{{ $event->event_name }}</h5>
+                                    <h5 class="card-title text-gray-900 font-weight-bold">{{ $event->name }}</h5>
 
                                     <div class="row mb-3">
                                         <div class="col">
-                                            <strong class="text-gray-900">Organizer:</strong> {{ $event->organizer }}
+                                            <strong class="text-gray-900">Organizer:</strong> {{ $event->organizer->name }}
                                         </div>
                                         <div class="col">
                                             <strong class="text-gray-900">Category:</strong> {{ $event->category }}
@@ -54,19 +54,30 @@
                                         </div>
                                     </div>
 
-                                    <!-- Baris 2: Fee, Start Date, End Date, Start Time, End Time -->
+                                    <!-- Baris 2: Status, Fee, Start Date, End Date, Start Time, End Time -->
                                     <div class="row mb-3">
                                         <div class="col">
-                                            <strong class="text-gray-900">Fee:</strong> {{ $event->fee ? '$' . number_format($event->fee, 2) : 'Free' }}
+                                            <strong class="text-gray-900">Status:</strong> 
+                                            {{ $event->status == 1 ? 'Available' : 'Sold Out' }}
                                         </div>
                                         <div class="col">
-                                            <strong class="text-gray-900">Date:</strong> {{ \Carbon\Carbon::parse($event->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('d M Y') }}
-                                        </div>
-                                        <div class="col">
-                                            <strong class="text-gray-900">Time:</strong> {{ $event->start_time }} - {{ $event->end_time }}
+                                            <strong class="text-gray-900">Fee:</strong> 
+                                            {{ $event->fee ? 'Rp' . number_format($event->fee, 0, ',', '.') : 'Free' }}
                                         </div>
                                     </div>
 
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <strong class="text-gray-900">Date:</strong> 
+                                            {{ \Carbon\Carbon::parse($event->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('d M Y') }}
+                                        </div>
+                                        <div class="col">
+                                            <strong class="text-gray-900">Time:</strong> 
+                                            {{ $event->start_time }} - {{ $event->end_time }} (UTC+07:00)
+                                        </div>
+                                    </div>
+
+                                    <!-- Description -->
                                     <div class="form-group">
                                         <strong class="text-gray-900">Description</strong>
                                         <p class="mt-2" id="description">{{ $event->description }}</p>
@@ -74,10 +85,10 @@
 
                                     <!-- Tombol Aksi -->
                                     <div class="text-center">
-                                        <a href="{{ route('crud-event.index') }}" class="btn btn-primary">Back to Event List</a>
+                                        <a href="{{ route('crud-event.index') }}" class="btn btn-secondary">Back to Event List</a>
                                         @if(auth()->check() && auth()->user()->role == 'admin')
-                                            <a href="{{ route('crud-event.edit', $event->event_id) }}" class="btn btn-success">Edit Event</a>
-                                            <form class="d-inline" action="{{ route('crud-event.destroy', $event->event_id) }}" method="POST" style="display: inline;">
+                                            <a href="{{ route('crud-event.edit', $event->id) }}" class="btn btn-primary">Edit Event</a>
+                                            <form class="d-inline" action="{{ route('crud-event.destroy', $event->id) }}" method="POST" style="display: inline;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete Event</button>

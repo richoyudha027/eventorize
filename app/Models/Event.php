@@ -9,13 +9,13 @@ class Event extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'event_id'; 
+    protected $primaryKey = 'id'; 
     public $incrementing = true;       
     protected $keyType = 'int';        
-    
+
     protected $fillable = [
-        'event_name',
-        'organizer',
+        'name',
+        'organizer_u_id',
         'location',
         'category',
         'fee',
@@ -25,6 +25,15 @@ class Event extends Model
         'end_time',
         'description',
         'image',
+        'status',
     ];
 
+    /**
+     * Relasi ke user yang berperan sebagai organizer.
+     */
+    // Event.php
+    public function organizer()
+    {
+        return $this->belongsTo(User::class, 'organizer_u_id');
+    }
 }

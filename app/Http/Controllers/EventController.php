@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-
 
 class EventController extends Controller
 {
@@ -19,12 +16,15 @@ class EventController extends Controller
     {
         $search = $request->input('search');
         $limit = $request->input('limit', 8);
-        $events = Event::where('event_name', 'LIKE', "%$search%")
+        $status = $request->input('status', true); 
+
+        $events = Event::where('name', 'LIKE', "%$search%")
                         ->orWhere('location', 'LIKE', "%$search%")
                         ->orWhere('category', 'LIKE', "%$search%")
+                        ->where('status', $status)
                         ->paginate($limit);
 
-        return view('admin-page.event.index', compact('events', 'search', 'limit'));
+        return view('admin-page.event.index', compact('events', 'search', 'limit', 'status'));
     }
 
     /**
@@ -32,8 +32,11 @@ class EventController extends Controller
      */
     public function create()
     {
-        return view('admin-page.event.create');
+
+        $organizers = User::where('role', 'organizer')->get();
+        return view('admin-page.event.create', compact('organizers'));
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -41,8 +44,8 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'event_name' => 'required|string|max:255',
-            'organizer' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'organizer_u_id' => 'required|exists:users,id', 
             'location' => 'required|string|max:255',
             'category' => 'required|string|max:100',
             'fee' => 'nullable|numeric',
@@ -51,17 +54,18 @@ class EventController extends Controller
             'start_time' => 'required',
             'end_time' => 'required',
             'description' => 'nullable|string',
+            'status' => 'boolean', 
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            $imageName = $request->file('image')->getClientOriginalName();
+            $imageName = $request->file('image')->hashName();
             $request->file('image')->storeAs('img', $imageName, 'public');
             $validatedData['image'] = $imageName;
         }
 
-        $event = Event::create($validatedData);
-        return redirect()->route('crud-event.index')->with('success', 'Event "' . $event->event_name . '" successfully added.');
+        Event::create($validatedData);
+        return redirect()->route('crud-event.index')->with('success', 'Event "' . $validatedData['name'] . '" successfully added.');
     }
 
     /**
@@ -79,7 +83,8 @@ class EventController extends Controller
     public function edit($crud_event)
     {
         $event = Event::findOrFail($crud_event);
-        return view('admin-page.event.edit', compact('event'));
+        $organizers = User::where('role', 'organizer')->get();
+        return view('admin-page.event.edit', compact('event', 'organizers'));
     }
 
     /**
@@ -90,8 +95,8 @@ class EventController extends Controller
         $event = Event::findOrFail($crud_event);
 
         $validatedData = $request->validate([
-            'event_name' => 'required|string|max:255',
-            'organizer' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'organizer_u_id' => 'required|exists:users,id', 
             'location' => 'required|string|max:255',
             'category' => 'required|string|max:100',
             'fee' => 'nullable|numeric',
@@ -100,23 +105,28 @@ class EventController extends Controller
             'start_time' => 'required',
             'end_time' => 'required',
             'description' => 'nullable|string',
+            'status' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|in:1,0',
         ]);
 
+        // Jika ada gambar baru, hapus gambar lama dan simpan gambar baru
         if ($request->hasFile('image')) {
             if ($event->image) {
-                Storage::delete('public/' . $event->image);
+                Storage::delete('public/img/' . $event->image);
             }
-        
-            $imageName = $request->file('image')->hashName(); 
-            $request->file('image')->storeAs('img', $imageName, 'public');
-        
-            $validatedData['image'] = $imageName;
-        }        
 
-        $event->update($validatedData);
-        return redirect()->route('crud-event.index')->with('success', 'Event "' . $event->event_name . '" successfully updated.');
+            $imageName = $request->file('image')->hashName();
+            $request->file('image')->storeAs('img', $imageName, 'public');
+            $validatedData['image'] = $imageName;
+        }
+
+        $event->fill($validatedData);
+        $event->save();
+
+        return redirect()->route('crud-event.index')->with('success', 'Event "' . $event->name . '" successfully updated.');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -126,14 +136,10 @@ class EventController extends Controller
         $event = Event::findOrFail($crud_event);
 
         if ($event->image) {
-            Storage::delete('public/' . $event->image);
+            Storage::delete('public/img/' . $event->image);
         }
 
         $event->delete();
-        return redirect()->route('crud-event.index')->with('success', 'Event "' . $event->event_name . '" successfully deleted.');
+        return redirect()->route('crud-event.index')->with('success', 'Event "' . $event->name . '" successfully deleted.');
     }
-
-
 }
-
-

@@ -13,11 +13,14 @@
                     <div class="card-body p-0">
                         <!-- Nested Row within Card Body -->
                         <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-                            <div class="col-lg-6">
+                            <div class="col-lg-6 d-none d-lg-block d-flex align-items-end justify-content-center">
+                                <img src="{{ asset('/storage/img/login.png') }}" alt="Image" class="img-fluid">
+                            </div>
+                            <div class="col-lg-6 justify-content-center align-items-center">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                        <h1 class="h4 text-gray-900">Welcome to Eventorize!</h1>
+                                        <h3 class="small text-gray-900 mb-4">Search and Create Your Event Easily</h3>
                                     </div>
                                     @if($errors->has('login'))
                                         <div class="form-group alert alert-danger small">
@@ -42,8 +45,8 @@
                                                 id="exampleInputPassword" placeholder="Password">
                                             
                                             <!-- Icon mata untuk show/hide password -->
-                                            <span class="position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;" onclick="togglePassword()">
-                                                <i class="fas fa-eye mr-2" id="toggleEye"></i> <!-- Perbaikan penutup <i> -->
+                                            <span class="position-absolute" style="right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer;" onclick="togglePassword()">
+                                                <i class="fas fa-eye" id="toggleEye"></i>
                                             </span>
 
                                             @if($errors->has('password'))
@@ -59,20 +62,13 @@
                                             </div>
                                         </div>
                                         <button name="submit" type="submit" class="btn btn-primary btn-user btn-block">Login</button>
-                                        <hr>
-                                        <a href="index.html" class="btn btn-google btn-user btn-block">
-                                            <i class="fab fa-google fa-fw"></i> Login with Google
-                                        </a>
-                                        <a href="index.html" class="btn btn-facebook btn-user btn-block">
-                                            <i class="fab fa-facebook-f fa-fw"></i> Login with Facebook
-                                        </a>
                                     </form>
                                     <hr>
-                                    <div class="text-center">
+                                    <div class="text-center mt-3">
                                         <a class="small" href="forgot-password.html">Forgot Password?</a>
                                     </div>
                                     <div class="text-center">
-                                        <a class="small" href="register.html">Create an Account!</a>
+                                        <a class="small" href="{{ route('register') }}">Create an Account!</a>
                                     </div>
                                 </div>
                             </div>
